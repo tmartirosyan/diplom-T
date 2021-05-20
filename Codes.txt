@@ -1,0 +1,163 @@
+import os
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from tkinter import *
+from win32api import GetSystemMetrics
+from tkinter import filedialog
+
+
+def program_start():
+    def scrap(imageName):
+        data = []
+        driver_exe = 'chromedriver'
+        options = Options()
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(driver_exe, options=options)
+        page = driver.get("http://metapicz.com/#landing")
+        button = driver.find_element_by_id("upload_input")
+        button.send_keys(f"{imageName}")
+        i = 0
+        while i < 10:
+            try:
+                data.append(driver.find_element_by_id("camera-box").text)
+                data.append(driver.find_element_by_id("location-box").text)
+                data.append(driver.find_element_by_id("exif-box").text)
+                data.append(driver.find_element_by_id("icc-box").text)
+            except Exception:
+                i += 1
+                time.sleep(1)
+                continue
+            break
+
+        fileName, i = "INformation", 0
+        exists = False
+        while not exists:
+            if os.path.exists(f"os.environ['USERPROFILE']\\Desktop\\{fileName} {i}.txt"):
+                i += 1
+            else:
+                fileName = f"{fileName} {i}"
+                break
+
+        with open(f"{os.environ['USERPROFILE']}\\Desktop\\{fileName}.txt", "w+") as dataFile:
+            for i in data:
+                dataFile.write(i)
+
+    def UploadAction(event=None):
+        filename = filedialog.askopenfilename()
+        scrap(filename)
+
+    app = Tk(className=" Spy")
+    app.geometry("300x300")
+    Label(app, text="Choose Photo for start").pack(pady=15)
+    Label(app, text="Wait untill on the desktop of your computer appear's 'information.txt' file").pack()
+    Button(app, text='Open', command=UploadAction).pack()
+    Label(app, text="", pady=25)
+    # messagebox.showinfo("Alert", "")
+    # Label(app,
+    #       text="The file was created succesfully!\nNow you can see more information about image, press the button under this text.").pack()
+    # Button(app, text="See >>", command=ExitWindowStartLookingInformation).pack()
+    app.mainloop()
+
+
+def isCorrect():
+    if login.get() == "admin" and password.get() == "admin":
+        label_error.config(text="Welcome! wait few seconds", fg="green")
+        root.destroy()
+        program_start()
+    label_error.config(text="Incorrect login or password !", fg="red")
+    return False
+
+
+screen_width = GetSystemMetrics(0)
+screen_height = GetSystemMetrics(1)
+
+root = Tk(className=" Spy")
+root.geometry(f"{screen_width // 2}x{screen_height // 2}")
+
+label = Label(root, text="Welcome ! For starting write login and password")
+label.pack(pady=25)
+
+Label(root).pack(pady=(0, 30))
+
+label_login = Label(root, text="Login").pack(pady=10)
+login = Entry(root, width=50)
+login.pack()
+
+label_password = Label(root, text="Password").pack(pady=10)
+password = Entry(root, width=50, show="*")
+password.pack()
+
+label_error = Label(root, text="")
+label_error.pack()
+
+submit_button = Button(root, text="Log In", command=isCorrect, pady=10, padx=15,
+                       bg="#202020", fg="white").pack(pady=10)
+
+# imgage = Image.open("spy.png")
+# # imgage.resize((100, 54), Image.ANTIALIAS)
+# img = ImageTk.PhotoImage(imgage)
+# labelImage = Label(image=img)
+# labelImage.pack()
+
+root.mainloop()
+
+
+# SECOND VARIANT
+
+# from GPSPhoto import gpsphoto as gpsp
+# from PIL.ExifTags import TAGS
+# from PIL.ExifTags import GPSTAGS
+# from PIL import Image
+# from pprint import pprint
+# import os
+# import requests
+#
+# def get_exif(filename):
+#     image = Image.open(filename)
+#     image.verify()
+#     return image._getexif()
+#
+# def get_labeled_exif(exif):
+#     labeled = {}
+#     for (key, val) in exif.items():
+#         labeled[TAGS.get(key)] = val
+#
+#     return labeled
+#
+# def get_geotagging(exif):
+#     if not exif:
+#         raise ValueError("No EXIF metadata found")
+#
+#     geotagging = {}
+#     for (idx, tag) in TAGS.items():
+#         if tag == 'GPSInfo':
+#             if idx not in exif:
+#                 raise ValueError("No EXIF geotagging found")
+#
+#             for (key, val) in GPSTAGS.items():
+#                 if key in exif[idx]:
+#                     geotagging[val] = exif[idx][key]
+#
+#     return geotagging
+#
+#
+# exif = get_exif('1.jpg')
+# geotags = get_geotagging(exif)
+# pprint(get_labeled_exif(exif))
+
+
+# Third variant
+
+# from GPSPhoto import gpsphoto as gpsp
+# from pprint import pprint
+# from selenium import webdriver
+#
+# data = gpsp.getGPSData("IMG_3325.jpg")
+# latitude = data['Latitude']
+# longitude = data['Longitude']
+# driver = webdriver.Chrome()
+# driver.get("https://yandex.ru/maps/")
+# searchInputBox = driver.find_element_by_class_name('input__control')
+# searchInputBox.send_keys(f"{latitude} {longitude}")
+# searchInputBox.submit()
